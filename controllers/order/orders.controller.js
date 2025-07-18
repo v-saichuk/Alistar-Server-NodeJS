@@ -3,8 +3,10 @@ import Order from '../../models/Order.js';
 import Product from '../../models/Product.js';
 import User from '../../models/User.js';
 
-import CryptoJS from 'crypto-js';
-import { SendMailNewOrder } from './order.send_mail.js';
+// import CryptoJS from 'crypto-js';
+// import { SendMailNewOrder } from './order.send_mail.js';
+import { generateUniqueOrderId } from '../../utils/generateUniqueNumber.js';
+import { NewUserOrderMessage } from '../../mails/Orders/NewOrder.message.js';
 
 // Get all orders
 export const getAll = async (req, res) => {
@@ -146,7 +148,7 @@ export const create = async (req, res) => {
             return res.status(400).json({ success: false, errors: errors.array() });
         }
 
-        const { cartProducts, ...other } = req.body;
+        const { cartProducts, delivery, ...other } = req.body;
 
         // Перевірка наявності необхідних даних
         if (!cartProducts || cartProducts.length === 0) {
@@ -186,21 +188,24 @@ export const create = async (req, res) => {
 
         // Створення замовлення
         const order = new Order({
+            orderId: await generateUniqueOrderId(Order),
             productsData,
             totalCost,
             statusHistory,
+            delivery: {
+                title: delivery,
+            },
             ...other,
         });
 
         await order.save();
 
-        // Відправляємо лист на пошту користувача, про успішне створення замовлення, та додаємо деталі про замовлення.
-        // NewUserOrderMessage(user.email, user.firstName, user.newPassword);
+        await NewUserOrderMessage(order); // Відправляємо лист на пошту користувача, про успішне створення замовлення, та додаємо деталі про замовлення.
 
         res.status(201).json({
             success: true,
             message: 'Order created successfully',
-            orderId: order._id.toString().slice(0, 5),
+            orderId: order.orderId,
             userEmail: other.shipping.email,
         });
     } catch (error) {

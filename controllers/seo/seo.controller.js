@@ -6,7 +6,7 @@ import SubSubCategory from '../../models/Categories/SubSubCategories.js';
 import axios from 'axios';
 import Redis from 'ioredis';
 
-const redis = new Redis('redis://localhost:6379');
+// const redis = new Redis('redis://localhost:6379');
 const SITE_URL = 'https://alistar.ltd';
 
 // export const generateSitemapIndex = async (req, res) => {

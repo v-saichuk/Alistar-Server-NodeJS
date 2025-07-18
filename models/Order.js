@@ -2,11 +2,16 @@ import mongoose from 'mongoose';
 
 const OrderSchema = new mongoose.Schema(
     {
+        orderId: {
+            type: String,
+            required: true,
+            unique: true,
+        },
         visited: {
             type: Boolean,
             default: false,
         },
-        payment: String,
+        payments: String,
         delivery: {
             title: {
                 type: String,
@@ -21,22 +26,27 @@ const OrderSchema = new mongoose.Schema(
             first_name: {
                 type: String,
                 required: true,
+                default: '',
             },
             last_name: {
                 type: String,
                 required: true,
+                default: '',
             },
             phone: {
                 type: String,
                 required: true,
+                default: '',
             },
             email: {
                 type: String,
                 required: true,
+                default: '',
             },
             address: {
                 type: String,
                 required: true,
+                default: '',
             },
             address_2: {
                 type: String,
@@ -45,10 +55,12 @@ const OrderSchema = new mongoose.Schema(
             address_type: {
                 type: String,
                 required: true,
+                default: '',
             },
             city: {
                 type: String,
                 required: true,
+                default: '',
             },
             company_name: {
                 type: String,
@@ -57,18 +69,21 @@ const OrderSchema = new mongoose.Schema(
             country: {
                 type: String,
                 required: true,
+                default: '',
             },
             post_code: {
                 type: String,
                 required: true,
+                default: '',
             },
             state: {
                 type: String,
                 required: true,
+                default: '',
             },
             tax_number: {
                 type: String,
-                required: true,
+                default: '',
             },
         },
         billing: {
@@ -152,6 +167,7 @@ const OrderSchema = new mongoose.Schema(
             type: Number,
             required: true,
             min: 0,
+            default: 0,
         },
         statusHistory: [
             {
