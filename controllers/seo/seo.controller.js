@@ -4,8 +4,8 @@ import Category from '../../models/Categories/Categories.js';
 import SubCategory from '../../models/Categories/SubCategories.js';
 import SubSubCategory from '../../models/Categories/SubSubCategories.js';
 import axios from 'axios';
-import Redis from 'ioredis';
-
+// Redis замінено на локальний кеш для спрощення
+// import Redis from 'ioredis';
 // const redis = new Redis('redis://localhost:6379');
 const SITE_URL = 'https://alistar.ltd';
 
@@ -193,31 +193,20 @@ export const generateGoogleXML = async (req, res) => {
         const subCategoryCache = {};
         const subSubCategoryCache = {};
 
-        // Функція кешування назви/опису категорій на 7 днів
+        // Функція кешування назви/опису категорій (локальний кеш)
         const getCachedCategoryName = async (model, id, type) => {
             if (!id) return '';
-            let cacheKey = `cat:${type}:${id}:${code}`;
-            // Перевір локальний in-request cache (швидше за redis)
+
+            // Перевір локальний in-request cache
             if (type === 'cat' && categoryCache[id]) return categoryCache[id];
             if (type === 'sub' && subCategoryCache[id]) return subCategoryCache[id];
             if (type === 'subsub' && subSubCategoryCache[id]) return subSubCategoryCache[id];
 
-            // Шукаємо у redis
-            let cached = await redis.get(cacheKey);
-            if (cached) {
-                // Збережи у in-request cache для пришвидшення наступних звернень у цьому ж запиті
-                if (type === 'cat') categoryCache[id] = cached;
-                if (type === 'sub') subCategoryCache[id] = cached;
-                if (type === 'subsub') subSubCategoryCache[id] = cached;
-                return cached;
-            }
-
-            // Якщо нема в redis — шукаємо у базі
+            // Шукаємо у базі
             let doc = await model.findById(id, { [`name.${code}`]: 1, [`description.${code}`]: 1 });
             let result = doc?.name?.[code] || '';
-            // Можна додати description або інше, якщо треба окремо кешувати
-            await redis.set(cacheKey, result, 'EX', 7 * 24 * 60 * 60); // 7 днів
-            // Локально кешуємо
+
+            // Локально кешуємо для цього запиту
             if (type === 'cat') categoryCache[id] = result;
             if (type === 'sub') subCategoryCache[id] = result;
             if (type === 'subsub') subSubCategoryCache[id] = result;
