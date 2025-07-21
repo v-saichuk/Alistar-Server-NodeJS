@@ -7,6 +7,7 @@ import User from '../../models/User.js';
 // import { SendMailNewOrder } from './order.send_mail.js';
 import { generateUniqueOrderId } from '../../utils/generateUniqueNumber.js';
 import { NewUserOrderMessage } from '../../mails/Orders/NewOrder.message.js';
+import { sendOrderTelegram } from './send.order.telegram.js';
 
 // Get all orders
 export const getAll = async (req, res) => {
@@ -200,7 +201,15 @@ export const create = async (req, res) => {
 
         await order.save();
 
-        await NewUserOrderMessage(order); // Відправляємо лист на пошту користувача, про успішне створення замовлення, та додаємо деталі про замовлення.
+        console.log('order', order);
+
+        // Відправляємо лист на пошту користувача, про успішне створення замовлення, та додаємо деталі про замовлення.
+        NewUserOrderMessage(order).catch((err) => {
+            console.error('Error sending user order email:', err);
+        });
+        sendOrderTelegram(order).catch((err) => {
+            console.error('Error sending order to Telegram:', err);
+        });
 
         res.status(201).json({
             success: true,
@@ -217,7 +226,7 @@ export const create = async (req, res) => {
         });
     }
 };
-
+// await sendOrderTelegram({});
 // Update order
 export const update = async (req, res) => {
     try {

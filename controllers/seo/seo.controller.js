@@ -4,9 +4,38 @@ import Category from '../../models/Categories/Categories.js';
 import SubCategory from '../../models/Categories/SubCategories.js';
 import SubSubCategory from '../../models/Categories/SubSubCategories.js';
 import axios from 'axios';
-// Redis замінено на локальний кеш для спрощення
-// import Redis from 'ioredis';
-// const redis = new Redis('redis://localhost:6379');
+import Redis from 'ioredis';
+
+// Створюємо Redis клієнт з обробкою помилок
+let redis = null;
+try {
+    redis = new Redis({
+        host: 'localhost',
+        port: 6379,
+        password: '2107fily',
+        retryDelayOnFailover: 100,
+        maxRetriesPerRequest: 3,
+        lazyConnect: true, // Не підключаємося одразу
+        connectTimeout: 5000, // 5 секунд на підключення
+    });
+
+    redis.on('error', (err) => {
+        console.error('Redis connection error:', err.message);
+        redis = null; // Відключаємо при помилці
+    });
+
+    redis.on('connect', () => {
+        console.log('✅ Redis connected successfully');
+    });
+
+    redis.on('close', () => {
+        console.log('❌ Redis connection closed');
+        redis = null;
+    });
+} catch (error) {
+    console.error('Failed to create Redis client:', error.message);
+    redis = null;
+}
 const SITE_URL = 'https://alistar.ltd';
 
 // export const generateSitemapIndex = async (req, res) => {
@@ -193,18 +222,47 @@ export const generateGoogleXML = async (req, res) => {
         const subCategoryCache = {};
         const subSubCategoryCache = {};
 
-        // Функція кешування назви/опису категорій (локальний кеш)
+        // Функція кешування назви/опису категорій (Redis + локальний кеш)
         const getCachedCategoryName = async (model, id, type) => {
             if (!id) return '';
 
-            // Перевір локальний in-request cache
+            // Перевір локальний in-request cache (швидкий)
             if (type === 'cat' && categoryCache[id]) return categoryCache[id];
             if (type === 'sub' && subCategoryCache[id]) return subCategoryCache[id];
             if (type === 'subsub' && subSubCategoryCache[id]) return subSubCategoryCache[id];
 
+            // Перевір Redis кеш (якщо доступний)
+            if (redis) {
+                try {
+                    const cacheKey = `cat:${type}:${id}:${code}`;
+                    const cached = await redis.get(cacheKey);
+                    if (cached) {
+                        // Зберігаємо в локальний кеш для цього запиту
+                        if (type === 'cat') categoryCache[id] = cached;
+                        if (type === 'sub') subCategoryCache[id] = cached;
+                        if (type === 'subsub') subSubCategoryCache[id] = cached;
+                        return cached;
+                    }
+                } catch (redisError) {
+                    console.error('Redis get error:', redisError.message);
+                    // При помилці Redis - продовжуємо без нього
+                }
+            }
+
             // Шукаємо у базі
             let doc = await model.findById(id, { [`name.${code}`]: 1, [`description.${code}`]: 1 });
             let result = doc?.name?.[code] || '';
+
+            // Зберігаємо в Redis (якщо доступний)
+            if (redis) {
+                try {
+                    const cacheKey = `cat:${type}:${id}:${code}`;
+                    await redis.setex(cacheKey, 5 * 24 * 60 * 60, result); // 5 днів
+                } catch (redisError) {
+                    console.error('Redis set error:', redisError.message);
+                    // При помилці Redis - продовжуємо без нього
+                }
+            }
 
             // Локально кешуємо для цього запиту
             if (type === 'cat') categoryCache[id] = result;
