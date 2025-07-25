@@ -15,6 +15,7 @@ import { slugify } from 'transliteration';
 import './helpers/autoAddProducts.js';
 import './helpers/analyzeProductSKUs.js';
 import './helpers/updateNameProduct.js';
+import './helpers/parseFiberMall.js';
 // ./HELPERS
 
 // http://localhost:8282/api/get-products?page=1&pageSize=10 - параметр запит
@@ -252,7 +253,7 @@ export const update = async (req, res) => {
 
         const updatedSlug = { ...existingProduct.slug };
 
-        // Генерація slug для мов, які з’явилися
+        // Генерація slug для мов, які з'явилися
         for (const lang in updatedName) {
             const newName = updatedName[lang];
             const currentName = existingProduct.name?.[lang];
@@ -898,7 +899,7 @@ const updateProductTranslationsDirectly = async (productId) => {
             return param;
         });
 
-        // Створюємо оновлений об’єкт товару з оновленими перекладами
+        // Створюємо оновлений об'єкт товару з оновленими перекладами
         const updatedProductData = {
             ...existingProduct._doc,
             parameters: updatedParameters,
@@ -1311,6 +1312,7 @@ export const updateNameProduct = async () => {
 // ===== ОНОВЛЕННЯ НАЗВИ ТА ОПИСУ ВСІХ ТОВАРІВ , ПОШУК СЛОВА ТА ЗАМІНА ЙОГО ====
 export const updateAllNameProduct = async () => {
     try {
+        console.log('Start updating all products...');
         // Знаходимо всі товари в базі
         const products = await Product.find();
 
@@ -1441,3 +1443,85 @@ export const updateNameProductForAll = async () => {
 
 // updateNameProductForAll(); // Викликаємо функцію
 // ./ПОШУК В ПАРАМЕРАХ СЛОВА ТА ЗАМІНА ТЕКСТА ГЛОБАЛЬНО
+
+// ===== СКОПІЮВАТИ ОПИС АНГЛІЙСЬКОЮ З UA ДО US, ЯКЩО US ПУСТИЙ =====
+const fillEnglishDescriptionFromUA = async () => {
+    try {
+        console.log('Start filling English description from UA...');
+        // Вибираємо тільки ті товари, де US опису немає, а UA існує
+        const products = await Product.find(
+            {
+                $or: [{ 'description.US': { $exists: false } }, { 'description.US': '' }, { 'description.US': null }],
+                'description.UA': { $exists: true, $ne: '' },
+            },
+            { sku: 1, description: 1, _id: 1 },
+        );
+
+        console.log(`Fetched ${products.length} products with empty US and non-empty UA description`);
+        let updated = 0;
+        let skippedNotEnglish = 0;
+        let skippedNoUA = 0;
+        let skippedOther = 0;
+        const bulkOps = [];
+
+        for (const product of products) {
+            const uaText = product.description?.UA?.trim();
+            if (!uaText) {
+                skippedNoUA++;
+                console.log(`[${product.sku}] Skipped: UA description is empty`);
+                continue;
+            }
+            // Перевіряємо чи UA опис англійською (латиниця)
+            if (/[a-zA-Z]/.test(uaText)) {
+                bulkOps.push({
+                    updateOne: {
+                        filter: { _id: product._id },
+                        update: { $set: { 'description.US': uaText } },
+                    },
+                });
+                updated++;
+                console.log(`[${product.sku}] Will update: UA copied to US`);
+            } else {
+                skippedNotEnglish++;
+                console.log(`[${product.sku}] Skipped: UA is not in English`);
+            }
+        }
+
+        if (bulkOps.length > 0) {
+            const result = await Product.bulkWrite(bulkOps);
+            console.log(`Bulk update result:`, result.result || result);
+        }
+
+        console.log('Summary:');
+        console.table([
+            { Metric: 'Всього', Value: products.length },
+            { Metric: 'Оновлено', Value: updated },
+            { Metric: 'Пропущено (UA не англійською)', Value: skippedNotEnglish },
+            { Metric: 'Пропущено (UA порожній)', Value: skippedNoUA },
+            { Metric: 'Пропущено (інше)', Value: skippedOther },
+        ]);
+    } catch (error) {
+        console.error('Error in fillEnglishDescriptionFromUA:', error);
+    }
+};
+
+// fillEnglishDescriptionFromUA().catch(console.error);
+
+// ===== ГЛОБАЛЬНЕ ЗНИЖЕННЯ ЦІНИ НА 15% ДЛЯ ВСІХ ТОВАРІВ (ПОШТУЧНО З ЛОГУВАННЯМ) =====
+const decreaseAllPricesBy15Percent = async () => {
+    try {
+        const result = await Product.updateMany({ price: { $exists: true, $ne: null } }, [
+            {
+                $set: {
+                    price: { $round: [{ $multiply: ['$price', 0.85] }, 2] },
+                },
+            },
+        ]);
+        console.log(`Оновлено: ${result.modifiedCount} товарів`);
+    } catch (error) {
+        console.error('Помилка при зниженні цін:', error);
+    }
+};
+// ===== ./ГЛОБАЛЬНЕ ЗНИЖЕННЯ ЦІНИ НА 15% ДЛЯ ВСІХ ТОВАРІВ (ПОШТУЧНО З ЛОГУВАННЯМ) =====
+
+// decreaseAllPricesBy15Percent();
