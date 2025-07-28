@@ -10,8 +10,8 @@ async function addAlistarToAllTitles() {
         const updatedName = { ...product.name };
 
         for (const lang in updatedName) {
-            if (!updatedName[lang]?.startsWith('alistar | ')) {
-                updatedName[lang] = `alistar | ${updatedName[lang]}`;
+            if (!updatedName[lang]?.endsWith(' | ALISTAR')) {
+                updatedName[lang] = `${updatedName[lang]} | ALISTAR`;
                 changed = true;
             }
         }
@@ -24,7 +24,6 @@ async function addAlistarToAllTitles() {
     }
 
     console.log(`Done! Updated titles for ${updatedCount} products.`);
-    // mongoose.disconnect();
 }
 
 // addAlistarToAllTitles().catch(console.error); // Викликаємо функцію для виконання
@@ -39,8 +38,8 @@ async function removeAlistarFromAllTitles() {
         const updatedName = { ...product.name };
 
         for (const lang in updatedName) {
-            if (updatedName[lang]?.startsWith('alistar | ')) {
-                updatedName[lang] = updatedName[lang].replace(/^alistar \| /, '');
+            if (updatedName[lang]?.endsWith(' | ALISTAR')) {
+                updatedName[lang] = updatedName[lang].replace(/ \| ALISTAR$/, '');
                 changed = true;
             }
         }
@@ -52,6 +51,7 @@ async function removeAlistarFromAllTitles() {
         }
     }
 
-    console.log(`Done! Removed 'alistar |' from ${updatedCount} products.`);
-    // mongoose.disconnect();
+    console.log(`Done! Removed ' | ALISTAR' from ${updatedCount} products.`);
 }
+
+// removeAlistarFromAllTitles().catch(console.error);
