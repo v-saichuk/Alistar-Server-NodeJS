@@ -3,7 +3,7 @@ import checkAuth from '../../shared/utils/checkAuth.js';
 import * as TemplatesController from '../controllers/templates/templates.controller.js';
 import * as TemplateSectionController from '../controllers/templates/sections/template.section.controller.js';
 import * as TemplateFieldsController from '../controllers/templates/fields/template.fields.controller.js';
-import * as TemplateValidation from '../../../validators/templates.validation.js';
+import * as TemplateValidation from '../../admin/validators/templates.validation.js';
 
 const router = Router();
 

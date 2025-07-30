@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import checkAuth from '../../shared/utils/checkAuth.js';
 import * as LanguageController from '../controllers/language/language.controller.js';
-import * as LanguageValidation from '../../../validators/language.validation.js';
+import * as LanguageValidation from '../../admin/validators/language.validation.js';
 
 const router = Router();
 
