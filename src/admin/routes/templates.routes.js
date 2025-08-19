@@ -6,6 +6,7 @@ import * as TemplateFieldsController from '../controllers/templates/fields/templ
 import * as TemplateValidation from '../../admin/validators/templates.validation.js';
 
 const router = Router();
+router.get('/api/admin/json/template/:id', TemplatesController.getOne);
 
 router.get('/api/templates', TemplatesController.getAll);
 router.post('/api/template', checkAuth, TemplateValidation.create, TemplatesController.create);

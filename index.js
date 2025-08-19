@@ -10,6 +10,9 @@ import checkAuth from './src/shared/utils/checkAuth.js';
 import { uploadImage, handleImageUpload } from './src/shared/utils/imageUploader.js';
 import { deleteImage } from './src/shared/utils/imageDelete.js';
 
+// import './GPT.js';
+// import './src/admin/helpers/parseEmail.js';
+
 const PORT = process.env.PORT || 8585;
 mongoose.set('strictQuery', true);
 dotenv.config();

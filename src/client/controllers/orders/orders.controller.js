@@ -67,8 +67,6 @@ export const create = async (req, res) => {
 
         await order.save();
 
-        console.log('order', order);
-
         // Відправляємо лист на пошту користувача, про успішне створення замовлення, та додаємо деталі про замовлення.
         NewUserOrderMessage(order).catch((err) => {
             console.error('Error sending user order email:', err);

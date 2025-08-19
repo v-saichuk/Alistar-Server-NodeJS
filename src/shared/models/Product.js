@@ -50,6 +50,16 @@ const ProductSchema = new mongoose.Schema(
         keywords: {
             type: Array,
         },
+        // Якщо false — ціну не оновлюємо автоматично
+        isEditPrice: {
+            type: Boolean,
+            default: true,
+        },
+        // Джерело парсингу ціни (наприклад: 'fibermall')
+        isParserSite: {
+            type: String,
+            default: '',
+        },
     },
     {
         timestamps: true,

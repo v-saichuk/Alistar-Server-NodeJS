@@ -169,6 +169,10 @@ const OrderSchema = new mongoose.Schema(
             min: 0,
             default: 0,
         },
+        comment: {
+            type: String,
+            default: '',
+        },
         statusHistory: [
             {
                 status: {

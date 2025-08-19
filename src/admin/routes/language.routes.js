@@ -5,7 +5,7 @@ import * as LanguageValidation from '../../admin/validators/language.validation.
 
 const router = Router();
 
-// router.get('/api/language', LanguageController.getAll);
+router.get('/api/language', LanguageController.getAll);
 router.post('/api/language', checkAuth, LanguageValidation.create, LanguageController.create);
 router.patch('/api/language/:id', checkAuth, LanguageController.update);
 router.delete('/api/language/:id', checkAuth, LanguageValidation.remove, LanguageController.remove);

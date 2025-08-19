@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Fibermall Bulk Price Parse Report</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                color: #19191a;
+            }
+            .wrap {
+                max-width: 900px;
+                margin: 0 auto;
+                background: #fff;
+                border: 1px solid #e5e5e5;
+            }
+            .header {
+                padding: 16px 20px;
+                border-bottom: 4px solid #333;
+            }
+            .header img {
+                display: block;
+            }
+            .content {
+                padding: 20px;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                font-size: 12px;
+            }
+            th,
+            td {
+                border: 1px solid #ddd;
+                padding: 6px;
+                text-align: left;
+            }
+            th {
+                background: #f7f7f7;
+            }
+            .meta {
+                margin: 10px 0 20px;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body style="background-color: #f9f9f9; padding: 10px">
+        <div class="wrap">
+            <div class="header">
+                <img src="https://alistar.ltd/images/logo/logo.jpg" alt="ALISTAR" width="150" height="45" />
+            </div>
+            <div class="content">
+                <h3>Звіт про парсинг цін з Fibermall</h3>
+                <div class="meta">
+                    <div><b>Почато:</b> {{startedAt}}</div>
+                    <div><b>Завершено:</b> {{finishedAt}}</div>
+                    <div>
+                        <b>Оброблено:</b> {{attempted}} | <b>Оновлено:</b> {{updated}} | <b>Не знайдено:</b> {{notFound}} | <b>Помилки:</b> {{errors}}
+                    </div>
+                    <div><b>Застосовано зміну ціни:</b> {{percent}}%</div>
+                </div>
+                <!-- ERRORS_TABLE_START -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Статус</th>
+                            <th>Повідомлення</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each items}}
+                        <tr>
+                            <td>{{sku}}</td>
+                            <td>{{status}}</td>
+                            <td>{{message}}</td>
+                        </tr>
+                        {{/each items}}
+                    </tbody>
+                </table>
+                <!-- ERRORS_TABLE_END -->
+            </div>
+        </div>
+    </body>
+</html>

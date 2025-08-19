@@ -98,16 +98,18 @@ async function prepareOrderData(order) {
         orderItems,
 
         // Суми
-        subtotal: `$${order.totalCost || 0}`,
+        subtotal: `$${(order.totalCost || 0).toFixed(2)}`,
         shipping: '$0.00', // Якщо є окремо — підставити
-        grandTotal: `$${order.totalCost || 0}`,
+        grandTotal: `$${(order.totalCost || 0).toFixed(2)}`,
 
         // Спосіб оплати
-
         paymentMethod:
             (order.payments === 'wayforpay' && 'Credit/Debit Card') ||
             (order.payments === 'bank_transfer' && 'Bank Transfer') ||
             (order.payments === 'other' && 'Other'),
+
+        // Коментар
+        comment: order.comment || '',
 
         // Білінгова адреса
         billingName: billing.first_name ? `${billing.first_name} ${billing.last_name}`.trim() : `${shipping.first_name} ${shipping.last_name}`.trim(),
@@ -142,10 +144,12 @@ export const NewUserOrderMessage = async (order) => {
         host,
         port,
         secure,
+        requireTLS: true,
         auth: {
             user: auth.no_reply.user,
             pass: auth.no_reply.pass,
         },
+        tls: { servername: 'alistar.ltd' },
     });
 
     // Читаємо HTML шаблон

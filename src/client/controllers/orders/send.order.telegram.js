@@ -51,11 +51,13 @@ export const sendOrderTelegram = async (order) => {
 <b>Address:</b> ${order?.shipping?.address}${order?.shipping?.address_2 ? ', ' + order?.shipping?.address_2 : ''}
 <b>City:</b> ${order?.shipping?.city}, ${order?.shipping?.country}, ${order?.shipping?.post_code}
 <b>State/Province:</b> ${order?.shipping?.state}
+<b>Comment:</b> ${order?.comment || ''}
 
 🛒 <b>Products:</b>
 ${productsList}
 
 💰 <b>Total:</b> $${order?.totalCost || 0}
+
 
 📅 <b>Створено:</b> ${order?.createdAt ? new Date(order.createdAt).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' }) : '-'} 
 `;
@@ -120,6 +122,7 @@ ${productsList}
 //         _id: new ObjectId("687e2a608963531f3c9231a9")
 //       }
 //     ],
+//     comment: 'Test comment',
 //     status: new ObjectId("67575f1bcbc5755882a2c47f"),
 //     totalCost: 182,
 //     statusHistory: [
