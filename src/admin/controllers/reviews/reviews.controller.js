@@ -22,11 +22,36 @@ export const getAll = async (req, res) => {
             .skip(skip)
             .limit(pageSizeNumber)
             .populate('user', 'lastName firstName avatar')
-            .populate('product', 'name images'); // через пробіл можна додавати властивості які будуть передані
+            .populate('product', 'name.US images') // через пробіл можна додавати властивості які будуть передані
+            .lean();
+
+        // Перетворюємо name з об'єкта { US: string } у простий рядок
+        const normalizedReviews = reviews.map((review) => {
+            if (review.product) {
+                // Нормалізація назви продукту до рядка US
+                if (review.product.name && typeof review.product.name === 'object') {
+                    review.product.name = review.product.name.US || '';
+                }
+
+                // Нормалізація зображення: беремо лише перше та повертаємо { originalname, small, large }
+                if (Array.isArray(review.product.images) && review.product.images.length > 0) {
+                    const firstImage = review.product.images[0];
+                    const largePath = firstImage.path || '';
+                    const smallPath = largePath.includes('/upload/') ? largePath.replace('/upload/', '/upload/small/') : largePath;
+
+                    review.product.images = {
+                        originalname: firstImage.originalname || '',
+                        small: smallPath,
+                        large: largePath,
+                    };
+                }
+            }
+            return review;
+        });
 
         // Відправляємо відгуки та загальну кількість у відповіді
         res.json({
-            reviews,
+            reviews: normalizedReviews,
             totalReviews,
         });
     } catch (error) {

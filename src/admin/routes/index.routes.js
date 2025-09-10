@@ -9,6 +9,7 @@ import adminInformationRoutes from './information.routes.js';
 import adminCategoryRoutes from './categories.routes.js';
 import adminTemplateRoutes from './templates.routes.js';
 import adminAuthRoutes from './auth.routes.js';
+import adminAvailabilityRoutes from './availability.routes.js';
 
 export default [
     adminOrderRoutes,
@@ -22,4 +23,5 @@ export default [
     adminCategoryRoutes,
     adminTemplateRoutes,
     adminAuthRoutes,
+    adminAvailabilityRoutes,
 ];

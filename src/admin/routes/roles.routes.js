@@ -6,6 +6,7 @@ import * as RolesController from '../controllers/roles/roles.controller.js';
 const router = Router();
 
 router.get('/api/roles', checkAuth, RolesController.getAll);
+router.get('/api/roles/:id', checkAuth, RolesController.getById);
 router.post('/api/roles', checkAuth, RolesController.create);
 router.patch('/api/roles/:id', checkAuth, RolesController.update);
 router.delete('/api/roles/:id', checkAuth, RolesController.remove);

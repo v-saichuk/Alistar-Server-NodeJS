@@ -125,20 +125,23 @@ export const update = async (req, res) => {
     try {
         const userId = req.params.id;
         const person = await User.findOne({ _id: userId });
+        if (!person) {
+            return res.status(404).json({
+                success: false,
+                message: 'Користувач не знайдений!',
+            });
+        }
+
         const { password, ...other } = req.body;
 
-        const newPasswordHash = async () => {
-            const salt = await bcrypt.genSalt(10);
-            const newPasswordHash = await bcrypt.hash(password, salt);
-            return newPasswordHash;
-        };
+        const updateData = { ...other };
 
-        await User.updateOne(
-            {
-                _id: userId,
-            },
-            { ...other, passwordHash: req.body.password ? await newPasswordHash() : person.passwordHash },
-        );
+        if (typeof password === 'string' && password.trim().length > 0) {
+            const salt = await bcrypt.genSalt(10);
+            updateData.passwordHash = await bcrypt.hash(password, salt);
+        }
+
+        await User.updateOne({ _id: userId }, updateData);
 
         res.json({
             success: true,

@@ -14,6 +14,18 @@ export const getAll = async (req, res) => {
     }
 };
 
+export const getById = async (req, res) => {
+    try {
+        const role = await Role.findById(req.params.id);
+        res.json(role);
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання посади!',
+        });
+    }
+};
+
 export const create = async (req, res) => {
     try {
         const error = validationResult(req);

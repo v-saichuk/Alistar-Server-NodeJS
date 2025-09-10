@@ -14,6 +14,19 @@ export const getAll = async (req, res) => {
     }
 };
 
+export const getOne = async (req, res) => {
+    try {
+        const language = await Language.findById(req.params.id);
+        res.json({ data: language });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch language!',
+            err,
+        });
+    }
+};
+
 export const create = async (req, res) => {
     try {
         const error = validationResult(req);

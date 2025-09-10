@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import checkAuth from '../../shared/utils/checkAuth.js';
 import * as ProductController from '../controllers/products/products.controller.js';
-import * as ProductAvailability from '../controllers/products/products.availability.controller.js';
 import * as ProductPriceController from '../controllers/products/products.price.controller.js';
 
 const router = Router();
@@ -19,8 +18,5 @@ router.get('/api/product/check-sku/:sku', ProductController.checkSkuExists);
 // Parse Fibermall price by SKU (HTTP fetch, no browser)
 router.post('/api/product/fibermall/price', checkAuth, ProductPriceController.parseFibermallPriceBySku);
 router.post('/api/product/fibermall/price/bulk', checkAuth, ProductPriceController.bulkParseFibermallPrices);
-
-router.get('/api/product/availability', checkAuth, ProductAvailability.getAvailability);
-router.post('/api/product/availability', checkAuth, ProductAvailability.update);
 
 export default router;
