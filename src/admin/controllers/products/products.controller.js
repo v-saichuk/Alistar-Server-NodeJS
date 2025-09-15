@@ -69,14 +69,14 @@ export const apiGetProductsAdmin = async (req, res) => {
         const totalProducts = await Product.countDocuments(query);
 
         const skip = (page - 1) * pageSize;
-        const products = await Product.find(query, {
+        const productsRaw = await Product.find(query, {
             [`name.US`]: 1,
+            [`slug.US`]: 1,
             active: 1,
             availability: 1,
             part_number: 1,
             category: 1,
             price: 1,
-            parameters: 1,
             images: 1,
             sku: 1,
             updatedAt: 1,
@@ -86,7 +86,25 @@ export const apiGetProductsAdmin = async (req, res) => {
             .sort({ _id: -1 })
             .skip(skip)
             .limit(pageSize)
-            .select('-description');
+            .select('-description')
+            .lean();
+
+        const products = productsRaw.map((product) => {
+            const firstImage = Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : null;
+            const largePath = firstImage?.path || '';
+            const smallPath = typeof largePath === 'string' ? largePath.replace('/upload/', '/upload/small/') : undefined;
+
+            return {
+                ...product,
+                name: product?.name?.US || '',
+                slug: product?.slug?.US || '',
+                images: {
+                    large: largePath,
+                    small: smallPath,
+                    originalname: firstImage?.originalname || '',
+                },
+            };
+        });
 
         res.json({ products, totalProducts });
     } catch (error) {
