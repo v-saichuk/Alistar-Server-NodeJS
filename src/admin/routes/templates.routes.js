@@ -8,11 +8,11 @@ import * as TemplateValidation from '../../admin/validators/templates.validation
 const router = Router();
 router.get('/api/admin/json/template/:id', TemplatesController.getOne);
 
-router.get('/api/templates', TemplatesController.getAll);
+router.get('/api/template', TemplatesController.getAll);
+router.get('/api/template/:id', TemplatesController.getOne);
 router.post('/api/template', checkAuth, TemplateValidation.create, TemplatesController.create);
 router.patch('/api/template/:id', checkAuth, TemplateValidation.update, TemplatesController.update);
 router.delete('/api/template/:id', checkAuth, TemplatesController.remove);
-router.patch('/api/template/:id', checkAuth, TemplateValidation.update, TemplatesController.update);
 
 router.post('/api/template/section/action', checkAuth, TemplateSectionController.create);
 router.patch('/api/template/section/action', checkAuth, TemplateSectionController.update);
