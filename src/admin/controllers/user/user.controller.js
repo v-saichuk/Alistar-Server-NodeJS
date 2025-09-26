@@ -4,7 +4,6 @@ import { validationResult } from 'express-validator';
 import User from '../../../shared/models/User.js';
 import Role from '../../../shared/models/Role.js';
 import Order from '../../../shared/models/Order.js';
-import { createNewUser } from '../../../shared/utils/createNewUser.js';
 
 export const getAllUsers = async (req, res) => {
     try {
