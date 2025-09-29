@@ -51,6 +51,7 @@ const extractPriceFromDetail = ($) => {
     return Number.isFinite(priceVal) ? priceVal : null;
 };
 
+// Функція для парсингу ціни Fibermall по SKU
 export const parseFibermallPriceBySku = async (req, res) => {
     try {
         const { sku, update } = req.body || {};
@@ -126,6 +127,7 @@ export const parseFibermallPriceBySku = async (req, res) => {
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Функція для парсингу ціни Fibermall по всіх товарах з флага isEditPrice: true і сайту fibermall
 export const bulkParseFibermallPrices = async (req, res) => {
     const startedAt = new Date();
     const summary = {

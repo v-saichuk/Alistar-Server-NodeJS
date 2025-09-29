@@ -95,8 +95,6 @@ export const searchProducts = async (req, res) => {
 
 export const searchUsers = async (req, res) => {
     try {
-        console.log('body', req.body);
-        console.log('query', req.query);
         const { q = '', limit = 10, cursor } = req.query;
 
         const take = Math.min(Math.max(Number(limit) || 10, 1), 100);
