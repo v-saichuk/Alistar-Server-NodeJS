@@ -6,11 +6,13 @@ import * as OrderStatusController from '../controllers/order/orders.status.contr
 const router = Router();
 
 router.get('/api/orders', OrderController.getAll);
+router.get('/api/orders/new/count', checkAuth, OrderController.getNewCount);
 router.post('/api/order', OrderController.create);
 router.patch('/api/order/:id', checkAuth, OrderController.update);
 router.delete('/api/order/:id', checkAuth, OrderController.remove);
 router.patch('/api/order/status/:id', checkAuth, OrderController.updateStatus);
 router.patch('/api/order/group/update', checkAuth, OrderController.groupUpdate);
+router.patch('/api/order/:id/visit', checkAuth, OrderController.markVisited);
 
 // === STATUS ===
 router.get('/api/order/status', checkAuth, OrderStatusController.getAll);

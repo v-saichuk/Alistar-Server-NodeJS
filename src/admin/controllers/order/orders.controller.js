@@ -4,11 +4,69 @@ import Product from '../../../shared/models/Product.js';
 
 import { generateUniqueOrderId } from '../../../shared/utils/generateUniqueNumber.js';
 
-// Get all orders
+// Get all orders (with pagination)
 export const getAll = async (req, res) => {
     try {
-        const orders = await Order.find().populate('productsData.product');
-        res.json(orders.reverse());
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const take = Math.min(Math.max(parseInt(req.query.take, 10) || 10, 1), 100);
+        const skip = (page - 1) * take;
+
+        const filter = {};
+
+        const [totalOrders, orders] = await Promise.all([
+            Order.countDocuments(filter),
+            Order.find(filter)
+                .select('-comment -statusHistory -payments -delivery')
+                .populate({
+                    path: 'productsData.product',
+                    select: 'name images', // _id включено за замовчуванням
+                })
+                .populate({
+                    path: 'status',
+                    select: 'title color description',
+                })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(take)
+                .lean(),
+        ]);
+
+        const minimized = orders.map((order) => {
+            if (Array.isArray(order.productsData)) {
+                order.productsData = order.productsData.map((item) => {
+                    const p = item.product;
+                    if (p && typeof p === 'object') {
+                        const firstImage = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null;
+                        const largePath = firstImage?.path || null;
+                        const smallPath = largePath ? largePath.replace('/upload/', '/upload/small/') : null;
+                        return {
+                            ...item,
+                            product: {
+                                _id: p._id,
+                                name: p.name && p.name.US ? p.name.US : '',
+                                images: {
+                                    large: largePath,
+                                    small: smallPath,
+                                    originalname: firstImage?.originalname || '',
+                                },
+                            },
+                        };
+                    }
+                    return item;
+                });
+            }
+            if (order.status && typeof order.status === 'object') {
+                const uaTitle = order.status.title && order.status.title.UA ? order.status.title.UA : '';
+                order.status = {
+                    title: uaTitle,
+                    color: order.status.color,
+                    description: order.status.description,
+                };
+            }
+            return order;
+        });
+
+        res.json({ orders: minimized, totalOrders, page, take });
     } catch (error) {
         res.status(500).json({ success: false, error });
     }
@@ -23,7 +81,7 @@ export const create = async (req, res) => {
             return res.status(400).json({ success: false, errors: errors.array() });
         }
 
-        const { cartProducts, delivery, ...other } = req.body;
+        const { cartProducts, delivery, comment: _omitComment, ...other } = req.body;
 
         // Перевірка наявності необхідних даних
         if (!cartProducts || cartProducts.length === 0) {
@@ -96,11 +154,11 @@ export const update = async (req, res) => {
     try {
         const { id: ORDER_PAGE_ID } = req.params;
 
-        const { ...orderData } = req.body;
+        const { comment: _omitComment, ...orderData } = req.body;
 
         await Order.updateOne({ _id: ORDER_PAGE_ID }, orderData);
 
-        const ORDER = await Order.findById(ORDER_PAGE_ID).populate('productsData.product');
+        const ORDER = await Order.findById(ORDER_PAGE_ID).select('-comment').populate('productsData.product');
 
         res.json({ success: true, data: ORDER });
     } catch (err) {
@@ -136,10 +194,22 @@ export const updateStatus = async (req, res) => {
     try {
         const { id: ORDER_PAGE_ID } = req.params;
         const { status } = req.body;
-        await Order.updateOne({ _id: ORDER_PAGE_ID }, { status });
-        res.json({
-            success: true,
-        });
+
+        // Оновлюємо статус і записуємо історію з автором змін
+        await Order.updateOne(
+            { _id: ORDER_PAGE_ID },
+            {
+                $set: { status },
+                $push: {
+                    statusHistory: {
+                        status: String(status),
+                        date: new Date(),
+                        changedBy: req.userId || null,
+                    },
+                },
+            },
+        );
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({
             success: false,
@@ -184,5 +254,44 @@ export const groupUpdate = async (req, res) => {
         res.status(500).json({
             success: false,
         });
+    }
+};
+
+// Позначити замовлення як переглянуте і записати хто переглянув
+export const markVisited = async (req, res) => {
+    try {
+        const { id: ORDER_PAGE_ID } = req.params;
+        const userId = req.userId || null;
+
+        // Оновити visited=true, додати в viewedBy якщо такого запису ще немає
+        const update = {
+            $set: { visited: true },
+        };
+
+        if (userId) {
+            update.$push = {
+                viewedBy: { user: userId, date: new Date() },
+            };
+        }
+
+        const result = await Order.updateOne({ _id: ORDER_PAGE_ID }, update);
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Замовлення не знайдено' });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
+};
+
+// Отримати кількість нових (непереглянутих) замовлень
+export const getNewCount = async (req, res) => {
+    try {
+        const count = await Order.countDocuments({ visited: false });
+        res.json({ success: true, count });
+    } catch (error) {
+        res.status(500).json({ success: false, error });
     }
 };

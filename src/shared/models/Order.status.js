@@ -3,12 +3,16 @@ import mongoose from 'mongoose';
 const OrderStatusSchema = new mongoose.Schema(
     {
         title: {
-            type: String,
+            type: Object,
             require: true,
         },
         color: {
             type: String,
             require: true,
+        },
+        description: {
+            type: String,
+            default: '',
         },
     },
     {
