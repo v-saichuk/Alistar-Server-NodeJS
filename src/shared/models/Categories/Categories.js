@@ -13,6 +13,10 @@ const CategorySchema = new mongoose.Schema({
     icon: {
         type: String,
     },
+    visible: {
+        type: Boolean,
+        default: true,
+    },
 });
 
 export default mongoose.model('Category', CategorySchema);

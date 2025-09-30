@@ -15,10 +15,10 @@ export const clientGetNavigations = async (req, res) => {
         }
 
         const { code } = language;
-        // Отримуємо категорії з бази даних
-        const categories = await Category.find();
-        const subCategories = await SubCategories.find();
-        const subSubCategories = await SubSubCategories.find();
+        // Отримуємо категорії з бази даних (тільки видимі)
+        const categories = await Category.find({ visible: { $ne: false } });
+        const subCategories = await SubCategories.find({ visible: { $ne: false } });
+        const subSubCategories = await SubSubCategories.find({ visible: { $ne: false } });
 
         // Кількість товарів в категорії
         // const productCounts = await Product.aggregate([{ $unwind: '$category' }, { $group: { _id: '$category', productCount: { $sum: 1 } } }]);
@@ -83,16 +83,16 @@ export const clientGetCategory = async (req, res) => {
 
         // Отримуємо список всіх мов
         const allLanguages = await Language.find({});
-        // Беремо всі категорії по заданому слагу
-        const categories = await Category.find({ [`slug.${code}`]: slug });
+        // Беремо всі категорії по заданому слагу (тільки видимі)
+        const categories = await Category.find({ [`slug.${code}`]: slug, visible: { $ne: false } });
         if (!categories.length) {
             return res.status(404).json({ success: false, message: 'Категорія не знайдена' });
         }
         const mainCategory = categories[0];
 
-        const sub_categories = await SubCategories.find({ parentId: mainCategory._id });
+        const sub_categories = await SubCategories.find({ parentId: mainCategory._id, visible: { $ne: false } });
         const subCategoryIds = sub_categories.map((cat) => cat._id);
-        const sub_sub_categories = await SubSubCategories.find({ parentId: { $in: subCategoryIds } });
+        const sub_sub_categories = await SubSubCategories.find({ parentId: { $in: subCategoryIds }, visible: { $ne: false } });
 
         const productCounts = await Product.aggregate([{ $unwind: '$category' }, { $group: { _id: '$category', productCount: { $sum: 1 } } }]);
         const productCountMap = Object.fromEntries(productCounts.map(({ _id, productCount }) => [_id.toString(), productCount]));

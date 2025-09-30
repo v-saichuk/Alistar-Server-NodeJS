@@ -17,6 +17,10 @@ const SubCategorySchema = new mongoose.Schema({
         ref: 'Category',
         required: true,
     },
+    visible: {
+        type: Boolean,
+        default: true,
+    },
 });
 
 export default mongoose.model('Subcategory', SubCategorySchema);
