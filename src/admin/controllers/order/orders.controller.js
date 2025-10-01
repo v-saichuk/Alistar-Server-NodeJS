@@ -16,7 +16,7 @@ export const getAll = async (req, res) => {
         const [totalOrders, orders] = await Promise.all([
             Order.countDocuments(filter),
             Order.find(filter)
-                .select('-comment -statusHistory -payments -delivery')
+                .select('-comment -statusHistory -payments -delivery -billing')
                 .populate({
                     path: 'productsData.product',
                     select: 'name images', // _id включено за замовчуванням
@@ -62,6 +62,12 @@ export const getAll = async (req, res) => {
                     color: order.status.color,
                     description: order.status.description,
                 };
+            }
+            // Extract only country from shipping and remove the shipping object
+            if (order.shipping && typeof order.shipping === 'object') {
+                order.country = order.shipping.country || '';
+                order.customerFullName = order.shipping.first_name + ' ' + order.shipping.last_name || '';
+                delete order.shipping;
             }
             return order;
         });
