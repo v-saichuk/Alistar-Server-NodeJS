@@ -21,6 +21,20 @@ const SubSubCategorySchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    meta: {
+        title: {
+            type: Object,
+            default: {},
+        },
+        description: {
+            type: Object,
+            default: {},
+        },
+        keywords: {
+            type: Object,
+            default: {},
+        },
+    },
 });
 
 export default mongoose.model('Subsubcategory', SubSubCategorySchema);
