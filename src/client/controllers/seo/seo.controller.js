@@ -290,7 +290,7 @@ export const generateGoogleXML = async (req, res) => {
 
         // Стрімімо товари курсором
         const cursor = Product.find(
-            { active: true, [`name.${code}`]: { $exists: true, $ne: '' } },
+            { isGoogleMerchant: { $ne: false }, [`name.${code}`]: { $exists: true, $ne: '' } },
             {
                 [`name.${code}`]: 1,
                 [`description.${code}`]: 1,

@@ -2,12 +2,6 @@ import mongoose from 'mongoose';
 
 const ProductSchema = new mongoose.Schema(
     {
-        active: {
-            type: Boolean,
-        },
-        isCatalog: {
-            type: Boolean,
-        },
         name: {
             type: Object,
             require: true,
@@ -49,6 +43,15 @@ const ProductSchema = new mongoose.Schema(
         },
         keywords: {
             type: Array,
+        },
+        active: {
+            type: Boolean,
+        },
+        isCatalog: {
+            type: Boolean,
+        },
+        isGoogleMerchant: {
+            type: Boolean,
         },
         // Якщо false — ціну не оновлюємо автоматично
         isEditPrice: {

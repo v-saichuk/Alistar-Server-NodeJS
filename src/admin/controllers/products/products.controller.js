@@ -354,10 +354,10 @@ export const duplicateProduct = async (req, res) => {
         const duplicatedProduct = new Product({
             ...product.toObject(),
             name: {
-                UA: product.name?.UA ? `(copy) ${product.name.UA}` : '(copy)',
+                US: product.name?.US ? `(copy) ${product.name.US}` : '(copy)',
             },
             description: {
-                UA: '',
+                US: '',
             },
             sku: Date.now(), // Генеруємо унікальний артикул
             _id: undefined, // Генерується автоматично
@@ -418,10 +418,10 @@ export const groupUpdate = async (req, res) => {
                         const duplicatedProduct = new Product({
                             ...product.toObject(),
                             name: {
-                                UA: product.name?.UA ? `(copy) ${product.name.UA}` : '(copy)',
+                                US: product.name?.US ? `(copy) ${product.name.US}` : '(copy)',
                             },
                             description: {
-                                UA: '',
+                                US: '',
                             },
                             sku: Date.now(), // Генеруємо унікальний артикул
                             _id: undefined, // Генерується автоматично
