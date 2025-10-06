@@ -1,6 +1,7 @@
 import Product from '../../../shared/models/Product.js';
 import Language from '../../../shared/models/Language.js';
 import User from '../../../shared/models/User.js';
+import Order from '../../../shared/models/Order.js';
 import mongoose from 'mongoose';
 
 function tokenize(text) {
@@ -204,6 +205,88 @@ export const searchUsers = async (req, res) => {
         const nextCursor = usersRaw.length === take ? String(usersRaw[usersRaw.length - 1]._id) : null;
 
         return res.json({ users, nextCursor, limit: take });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: 'Search error', error: err?.message });
+    }
+};
+
+export const searchOrders = async (req, res) => {
+    try {
+        const { q = '', limit = 10, cursor, field } = req.query;
+
+        const take = Math.min(Math.max(Number(limit) || 10, 1), 100);
+        const raw = String(q || '').trim();
+        const safeRaw = escapeRegex(raw);
+
+        // Якщо немає запиту, повертаємо порожній результат, щоб уникнути важкого списку
+        if (!raw) {
+            return res.json({ orders: [], nextCursor: null, limit: take });
+        }
+
+        const query = {};
+
+        if (field === 'customerEmail') {
+            // Частичний, нечутливий до регістру пошук на shipping.email
+            query['shipping.email'] = { $regex: safeRaw, $options: 'i' };
+        } else {
+            // Звичайний пошук та 'ORDERNO': нормалізуємо, видаляючи 'AL' і всі нецифрові символи, потім шукаємо підрядок
+            const normalized = raw.replace(/al/gi, '').replace(/[^0-9]/g, '');
+            if (!normalized) {
+                return res.json({ orders: [], nextCursor: null, limit: take });
+            }
+            query.orderId = { $regex: escapeRegex(normalized), $options: 'i' };
+        }
+
+        if (cursor) {
+            try {
+                query._id = { ...(query._id || {}), $lt: new mongoose.Types.ObjectId(cursor) };
+            } catch (e) {
+                // ignore invalid cursor
+            }
+        }
+
+        const ordersRaw = await Order.find(query, {
+            _id: 1,
+            orderId: 1,
+            shipping: 1,
+            totalCost: 1,
+            status: 1,
+            createdAt: 1,
+        })
+            .populate({
+                path: 'status',
+                select: 'title color description',
+            })
+            .sort({ _id: -1 })
+            .limit(take)
+            .lean();
+
+        const orders = ordersRaw.map((o) => {
+            let status = o.status;
+            if (status && typeof status === 'object') {
+                status = {
+                    title: (status.title && status.title.UA) || '',
+                    color: status.color,
+                    description: status.description,
+                };
+            }
+            const firstName = o?.shipping?.first_name || '';
+            const lastName = o?.shipping?.last_name || '';
+            const email = o?.shipping?.email || '';
+            return {
+                id: o._id,
+                orderId: o.orderId,
+                customerFullName: `${firstName} ${lastName}`.trim(),
+                customerEmail: email,
+                totalCost: o.totalCost || 0,
+                status,
+                createdAt: o.createdAt,
+            };
+        });
+
+        const nextCursor = ordersRaw.length === take ? String(ordersRaw[ordersRaw.length - 1]._id) : null;
+
+        return res.json({ orders, nextCursor, limit: take });
     } catch (err) {
         return res.status(500).json({ success: false, message: 'Search error', error: err?.message });
     }
