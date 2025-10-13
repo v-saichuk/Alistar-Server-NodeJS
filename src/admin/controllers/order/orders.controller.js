@@ -82,6 +82,7 @@ export const getById = async (req, res) => {
     try {
         const { orderNum } = req.params;
         const order = await Order.findOne({ orderId: orderNum }).populate('productsData.product').populate('status');
+
         res.json({ success: true, data: order });
     } catch (err) {
         res.status(500).json({ success: false });
