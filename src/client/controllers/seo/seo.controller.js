@@ -93,7 +93,7 @@ export const generateMainSitemapIndex = async (req, res) => {
         const sitemapEntries = languages
             .map(
                 (lang) =>
-                    `<sitemap><loc>${SITE_URL}/sitemap-${lang.urlCode}.xml</loc><lastmod>${
+                    `<sitemap><loc>${SITE_URL}/${lang.urlCode}/sitemap.xml</loc><lastmod>${
                         new Date().toISOString().split('T')[0]
                     }</lastmod></sitemap>`,
             )

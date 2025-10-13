@@ -6,6 +6,7 @@ import * as OrderStatusController from '../controllers/order/orders.status.contr
 const router = Router();
 
 router.get('/api/orders', OrderController.getAll);
+router.get('/api/order/:orderNum', OrderController.getById);
 router.get('/api/orders/new/count', checkAuth, OrderController.getNewCount);
 router.post('/api/order', OrderController.create);
 router.patch('/api/order/:id', checkAuth, OrderController.update);
