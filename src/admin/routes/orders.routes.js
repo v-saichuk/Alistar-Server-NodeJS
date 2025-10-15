@@ -5,21 +5,31 @@ import * as OrderStatusController from '../controllers/order/orders.status.contr
 
 const router = Router();
 
-router.get('/api/orders', OrderController.getAll);
-router.get('/api/order/:orderNum', OrderController.getById);
-router.get('/api/orders/new/count', checkAuth, OrderController.getNewCount);
-router.post('/api/order', OrderController.create);
-router.patch('/api/order/:id', checkAuth, OrderController.update);
-router.delete('/api/order/:id', checkAuth, OrderController.remove);
-router.patch('/api/order/status/:id', checkAuth, OrderController.updateStatus);
-router.patch('/api/order/group/update', checkAuth, OrderController.groupUpdate);
-router.patch('/api/order/:id/visit', checkAuth, OrderController.markVisited);
+router.get('/api/admin/orders', OrderController.getAll); // отримати всі замовлення
+router.get('/api/admin/orders/:orderNum', OrderController.getById); // отримати замовлення за номером
+router.get('/api/admin/orders/new/count', checkAuth, OrderController.getNewCount); // кількість нових замовлень
+
+router.post('/api/order', OrderController.create); // створити нове замовлення
+router.patch('/api/order/:id', checkAuth, OrderController.update); // оновити замовлення
+router.delete('/api/order/:id', checkAuth, OrderController.remove); // видалити замовлення
+router.patch('/api/order/group/update', checkAuth, OrderController.groupUpdate); // групове оновлення замовлень
+
+router.patch('/api/admin/orders/:id/visit', checkAuth, OrderController.markVisited); // позначити як переглянуте
+
+// === ADMIN ORDERS ===
+// router.post('/api/admin/orders', checkAuth, OrderController.create);              // створити нове замовлення
+// router.patch('/api/admin/orders/:id', checkAuth, OrderController.update);         // оновити замовлення
+// router.delete('/api/admin/orders/:id', checkAuth, OrderController.remove);        // видалити замовлення
+
+// router.patch('/api/admin/orders/group', checkAuth, OrderController.groupUpdate);  // групове оновлення замовлень
+// === ./ADMIN ORDERS ===
 
 // === STATUS ===
-router.get('/api/order/status', checkAuth, OrderStatusController.getAll);
-router.post('/api/order/status', checkAuth, OrderStatusController.create);
-router.patch('/api/order/status/patch/:id', checkAuth, OrderStatusController.update);
-router.delete('/api/order/status/:id', checkAuth, OrderStatusController.remove);
+router.get('/api/admin/order-status', checkAuth, OrderStatusController.getAll); // отримати всі статуси замовлень
+router.post('/api/admin/order-status', checkAuth, OrderStatusController.create); // створити статус
+router.patch('/api/admin/order-status/:id', checkAuth, OrderStatusController.update); // оновити дані статусу
+router.patch('/api/admin/order-status/:id/state', checkAuth, OrderStatusController.updateStatus); // змінити стан (активний/неактивний)
+router.delete('/api/admin/order-status/:id', checkAuth, OrderStatusController.remove); // видалити статус
 // === ./STATUS ===
 
 export default router;

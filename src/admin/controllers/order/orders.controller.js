@@ -206,34 +206,6 @@ export const remove = async (req, res) => {
     }
 };
 
-// Update order status
-export const updateStatus = async (req, res) => {
-    try {
-        const { id: ORDER_PAGE_ID } = req.params;
-        const { status } = req.body;
-
-        // Оновлюємо статус і записуємо історію з автором змін
-        await Order.updateOne(
-            { _id: ORDER_PAGE_ID },
-            {
-                $set: { status },
-                $push: {
-                    statusHistory: {
-                        status: String(status),
-                        date: new Date(),
-                        changedBy: req.userId || null,
-                    },
-                },
-            },
-        );
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-        });
-    }
-};
-
 // Update group of orders
 export const groupUpdate = async (req, res) => {
     try {

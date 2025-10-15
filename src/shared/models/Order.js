@@ -11,19 +11,6 @@ const OrderSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        viewedBy: [
-            {
-                user: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'User',
-                    required: true,
-                },
-                date: {
-                    type: Date,
-                    default: Date.now,
-                },
-            },
-        ],
         payments: String,
         delivery: {
             title: {
@@ -186,6 +173,19 @@ const OrderSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
+        viewedBy: [
+            {
+                user: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'User',
+                    required: true,
+                },
+                date: {
+                    type: Date,
+                    default: Date.now,
+                },
+            },
+        ],
         statusHistory: [
             {
                 status: {
