@@ -15,6 +15,7 @@ router.delete('/api/order/:id', checkAuth, OrderController.remove); // вида�
 router.patch('/api/order/group/update', checkAuth, OrderController.groupUpdate); // групове оновлення замовлень
 
 router.patch('/api/admin/orders/:id/visit', checkAuth, OrderController.markVisited); // позначити як переглянуте
+router.patch('/api/admin/orders/:id/status', checkAuth, OrderController.updateStatus); // змінити стан (активний/неактивний) замовлення
 
 // === ADMIN ORDERS ===
 // router.post('/api/admin/orders', checkAuth, OrderController.create);              // створити нове замовлення
@@ -26,9 +27,9 @@ router.patch('/api/admin/orders/:id/visit', checkAuth, OrderController.markVisit
 
 // === STATUS ===
 router.get('/api/admin/order-status', checkAuth, OrderStatusController.getAll); // отримати всі статуси замовлень
+router.get('/api/admin/order-status/:id', checkAuth, OrderStatusController.getById); // отримати статус за ID
 router.post('/api/admin/order-status', checkAuth, OrderStatusController.create); // створити статус
 router.patch('/api/admin/order-status/:id', checkAuth, OrderStatusController.update); // оновити дані статусу
-router.patch('/api/admin/order-status/:id/state', checkAuth, OrderStatusController.updateStatus); // змінити стан (активний/неактивний)
 router.delete('/api/admin/order-status/:id', checkAuth, OrderStatusController.remove); // видалити статус
 // === ./STATUS ===
 
