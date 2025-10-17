@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import SettingsEmail from '../../shared/models/Settings.email.js';
 import Product from '../../shared/models/Product.js';
+import { normalizeSmallImageUrl } from '../../shared/utils/normalizeImageUrl.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,11 +51,8 @@ async function prepareOrderData(order) {
     // Запитуємо продукти з бази
     const products = await Product.find({ _id: { $in: productIds } }, { name: 1, slug: 1, images: 1 });
 
-    // Хелпер для заміни хоста у зображенні
-    const replaceImageHost = (url) => {
-        if (!url) return '';
-        return url.replace('https://server.alistar.ltd/upload/small/', 'https://alistar.ltd/image/small/');
-    };
+    // Хелпер нормалізації картинки (small)
+    const replaceImageHost = (url) => normalizeSmallImageUrl(url);
 
     // Формуємо список товарів для шаблону з назвами з бази
     const orderItems = order.productsData.map((item) => {

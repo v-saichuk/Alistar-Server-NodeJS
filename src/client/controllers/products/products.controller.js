@@ -5,6 +5,7 @@ import Language from '../../../shared/models/Language.js';
 import Category from '../../../shared/models/Categories/Categories.js';
 import SubCategory from '../../../shared/models/Categories/SubCategories.js';
 import SubSubCategory from '../../../shared/models/Categories/SubSubCategories.js';
+import { normalizeImageUrl, normalizeSmallImageUrl } from '../../../shared/utils/normalizeImageUrl.js';
 
 // 🔧 Функція токенізації запиту
 function tokenize(text) {
@@ -61,7 +62,7 @@ export const getSearch = async (req, res) => {
                 _id: productObject._id,
                 name: productObject.name?.[code] || '',
                 slug: productObject.slug?.[code] || '',
-                image: productObject.images?.[0]?.path || null,
+                image: normalizeImageUrl(productObject.images?.[0]?.path || ''),
                 sku: productObject.sku || '',
             };
         });
@@ -259,16 +260,10 @@ export const getAllProducts = async (req, res) => {
                 const averageRate = totalReviews > 0 ? Number((totalRateSum / totalReviews).toFixed(1)) : 0;
 
                 const name = product.name?.[langCode] || product.name?.[fallbackCode] || '';
-                // Змінюємо базовий шлях
-                const replaceImageHost = (url) => {
-                    if (!url) return '';
-                    return url.replace('https://server.alistar.ltd/upload/', 'https://alistar.ltd/image/');
-                };
-
                 const images = (product.images || []).map((image) => ({
                     alt: image.originalname,
-                    large: replaceImageHost(image.path),
-                    small: replaceImageHost(image.path).replace('/image/', '/image/small/'),
+                    large: normalizeImageUrl(image.path),
+                    small: normalizeSmallImageUrl(image.path),
                 }));
 
                 // === 🧠 Обробка параметрів з productSKU ===
@@ -376,12 +371,22 @@ export const getAllProducts = async (req, res) => {
                 _id: subCategory._id,
                 name: subCategory.name?.[langCode] || subCategory.name?.[fallbackCode] || '',
                 slug: subCategory.slug?.[langCode] || subCategory.slug?.[fallbackCode] || '',
+                meta: {
+                    title: subCategory.meta?.title?.[langCode] || subCategory.meta?.title?.[fallbackCode] || '',
+                    description: subCategory.meta?.description?.[langCode] || subCategory.meta?.description?.[fallbackCode] || '',
+                    keywords: subCategory.meta?.keywords?.[langCode] || subCategory.meta?.keywords?.[fallbackCode] || '',
+                },
             },
             subSubCategory: subSubCategory
                 ? {
                       _id: subSubCategory._id,
                       name: subSubCategory.name?.[langCode] || subSubCategory.name?.[fallbackCode] || '',
                       slug: subSubCategory.slug?.[langCode] || subSubCategory.slug?.[fallbackCode] || '',
+                      meta: {
+                          title: subSubCategory.meta?.title?.[langCode] || subSubCategory.meta?.title?.[fallbackCode] || '',
+                          description: subSubCategory.meta?.description?.[langCode] || subSubCategory.meta?.description?.[fallbackCode] || '',
+                          keywords: subSubCategory.meta?.keywords?.[langCode] || subSubCategory.meta?.keywords?.[fallbackCode] || '',
+                      },
                   }
                 : null,
             pagination: {
@@ -446,16 +451,10 @@ export const clientGetOne = async (req, res) => {
         const localizedName = isLangAvailable ? product.name?.[code] : product.name?.[fallbackLang] || '';
         const localizedDescription = isLangAvailable ? product.description?.[code] : product.description?.[fallbackLang] || '';
 
-        // Змінюємо базовий шлях
-        const replaceImageHost = (url) => {
-            if (!url) return '';
-            return url.replace('https://server.alistar.ltd/upload/', 'https://alistar.ltd/image/');
-        };
-
         const images = (product.images || []).map((image) => ({
             alt: image.originalname,
-            large: replaceImageHost(image.path),
-            small: replaceImageHost(image.path).replace('/image/', '/image/small/'),
+            large: normalizeImageUrl(image.path),
+            small: normalizeSmallImageUrl(image.path),
         }));
 
         const availability = {

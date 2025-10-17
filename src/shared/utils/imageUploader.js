@@ -31,7 +31,7 @@ export const handleImageUpload = async (req, res) => {
             existingFile.filename = uniqueSuffix;
             await existingFile.save();
 
-            res.json({ url: `/upload/${uniqueSuffix}` });
+            res.json({ url: `https://alistar.ltd/image/${uniqueSuffix}` });
         } else {
             const doc = new Gallery({
                 originalname: req.file.originalname,
@@ -54,15 +54,15 @@ export const handleImageUpload = async (req, res) => {
                     .on('error', (err) => console.error('Помилка зменшення зображення:', err));
 
                 return res.json({
-                    url: `/upload/${req.file.filename}`,
-                    url_small: `/upload/small/${req.file.filename}`,
+                    url: `https://alistar.ltd/image/${req.file.filename}`,
+                    url_small: `https://alistar.ltd/image/small/${req.file.filename}`,
                     data: saved,
                 });
             }
 
             return res.json({
-                url: `/upload/${req.file.filename}`,
-                url_small: `/upload/small/${req.file.filename}`,
+                url: `https://alistar.ltd/image/${req.file.filename}`,
+                url_small: `https://alistar.ltd/image/small/${req.file.filename}`,
                 data: saved,
             });
         }

@@ -1,6 +1,7 @@
 import { validationResult } from 'express-validator';
 import Order from '../../../shared/models/Order.js';
 import Product from '../../../shared/models/Product.js';
+import { normalizeImageUrl, normalizeSmallImageUrl } from '../../../shared/utils/normalizeImageUrl.js';
 
 import { generateUniqueOrderId } from '../../../shared/utils/generateUniqueNumber.js';
 
@@ -37,16 +38,16 @@ export const getAll = async (req, res) => {
                     const p = item.product;
                     if (p && typeof p === 'object') {
                         const firstImage = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null;
-                        const largePath = firstImage?.path || null;
-                        const smallPath = largePath ? largePath.replace('/upload/', '/upload/small/') : null;
+                        const largePath = normalizeImageUrl(firstImage?.path || '');
+                        const smallPath = normalizeSmallImageUrl(firstImage?.path || '');
                         return {
                             ...item,
                             product: {
                                 _id: p._id,
                                 name: p.name && p.name.US ? p.name.US : '',
                                 images: {
-                                    large: largePath,
-                                    small: smallPath,
+                                    large: largePath || null,
+                                    small: smallPath || null,
                                     originalname: firstImage?.originalname || '',
                                 },
                             },

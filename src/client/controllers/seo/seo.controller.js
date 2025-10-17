@@ -5,6 +5,7 @@ import Language from '../../../shared/models/Language.js';
 import Category from '../../../shared/models/Categories/Categories.js';
 import SubCategory from '../../../shared/models/Categories/SubCategories.js';
 import SubSubCategory from '../../../shared/models/Categories/SubSubCategories.js';
+import { normalizeImageUrl } from '../../../shared/utils/normalizeImageUrl.js';
 
 // Створюємо Redis клієнт з обробкою помилок
 let redis = null;
@@ -212,10 +213,7 @@ export const generateGoogleXML = async (req, res) => {
         }
 
         // Хелпер для заміни хоста у зображенні
-        const replaceImageHost = (url) => {
-            if (!url) return '';
-            return url.replace('https://server.alistar.ltd/upload/', 'https://alistar.ltd/image/');
-        };
+        const replaceImageHost = (url) => normalizeImageUrl(url);
 
         // Кеш-контейнери для одного запиту (щоб не ходити у Redis двічі за одну feed-генерацію)
         const categoryCache = {};

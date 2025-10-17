@@ -74,7 +74,6 @@ export const clientGetCategory = async (req, res) => {
     try {
         const { lang } = req.query;
         const { slug } = req.params;
-
         const language = await Language.findOne({ urlCode: lang });
         if (!language) {
             return res.status(400).json({ success: false, message: 'Невірна мова' });
@@ -123,6 +122,9 @@ export const clientGetCategory = async (req, res) => {
             icon: category.icon || '',
             productCount: productCountMap[category._id.toString()] || 0,
             seo: {
+                title: category.meta?.title?.[code] || '',
+                description: category.meta?.description?.[code] || '',
+                keywords: category.meta?.keywords?.[code] || '',
                 canonical: `https://alistar.ltd/${urlCode}/catalog/${category.slug?.[code] || ''}`,
                 alternates,
             },

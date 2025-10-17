@@ -9,6 +9,7 @@ import { slugify } from 'transliteration';
 import Reviews from '../../../shared/models/Reviews.js';
 import Redirect from '../../../shared/models/Redirect.js';
 import Product from '../../../shared/models/Product.js';
+import { normalizeImageUrl, normalizeSmallImageUrl } from '../../../shared/utils/normalizeImageUrl.js';
 import ProductSettings from '../../../shared/models/Products.settings.js';
 
 // HELPERS
@@ -91,8 +92,8 @@ export const apiGetProductsAdmin = async (req, res) => {
 
         const products = productsRaw.map((product) => {
             const firstImage = Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : null;
-            const largePath = firstImage?.path || '';
-            const smallPath = typeof largePath === 'string' ? largePath.replace('/upload/', '/upload/small/') : undefined;
+            const largePath = normalizeImageUrl(firstImage?.path || '');
+            const smallPath = normalizeSmallImageUrl(firstImage?.path || '');
 
             return {
                 ...product,

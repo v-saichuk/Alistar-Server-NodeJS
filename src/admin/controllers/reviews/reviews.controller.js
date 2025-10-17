@@ -1,6 +1,7 @@
 import { validationResult } from 'express-validator';
 import Reviews from '../../../shared/models/Reviews.js';
 import User from '../../../shared/models/User.js';
+import { normalizeImageUrl, normalizeSmallImageUrl } from '../../../shared/utils/normalizeImageUrl.js';
 
 export const getAll = async (req, res) => {
     try {
@@ -45,8 +46,8 @@ export const getAll = async (req, res) => {
                 // Нормалізація зображення: беремо лише перше та повертаємо лише small
                 if (Array.isArray(review.product.images) && review.product.images.length > 0) {
                     const firstImage = review.product.images[0];
-                    const largePath = firstImage.path || '';
-                    const smallPath = largePath.includes('/upload/') ? largePath.replace('/upload/', '/upload/small/') : largePath;
+                    const largePath = normalizeImageUrl(firstImage.path || '');
+                    const smallPath = normalizeSmallImageUrl(firstImage.path || '');
 
                     review.product.image = smallPath;
                 }
@@ -128,8 +129,8 @@ export const create = async (req, res) => {
             }
             if (Array.isArray(data.product.images) && data.product.images.length > 0) {
                 const firstImage = data.product.images[0];
-                const largePath = firstImage.path || '';
-                const smallPath = largePath.includes('/upload/') ? largePath.replace('/upload/', '/upload/small/') : largePath;
+                const largePath = normalizeImageUrl(firstImage.path || '');
+                const smallPath = normalizeSmallImageUrl(firstImage.path || '');
                 data.product.image = smallPath;
             }
             // Прибираємо зайве поле images, залишаємо лише image
