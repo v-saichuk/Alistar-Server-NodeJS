@@ -15,49 +15,70 @@ export const clientGetNavigations = async (req, res) => {
         }
 
         const { code } = language;
-        // Отримуємо категорії з бази даних (тільки видимі)
-        const categories = await Category.find({ visible: { $ne: false } });
-        const subCategories = await SubCategories.find({ visible: { $ne: false } });
-        const subSubCategories = await SubSubCategories.find({ visible: { $ne: false } });
+        // Отримуємо категорії з бази даних з трансформацією на рівні MongoDB
+        const categories = await Category.aggregate([
+            {
+                $match: {
+                    visible: { $ne: false },
+                    [`name.${code}`]: { $exists: true, $ne: '' },
+                },
+            },
+            {
+                $sort: { _id: 1 }, // Зберігаємо порядок за _id
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: `$name.${code}`,
+                    slug: `$slug.${code}`,
+                    icon: 1,
+                },
+            },
+        ]);
 
-        // Кількість товарів в категорії
-        // const productCounts = await Product.aggregate([{ $unwind: '$category' }, { $group: { _id: '$category', productCount: { $sum: 1 } } }]);
+        // Отримуємо підкатегорії з трансформацією
+        const subCategories = await SubCategories.aggregate([
+            {
+                $match: { visible: { $ne: false } },
+            },
+            {
+                $sort: { _id: 1 }, // Зберігаємо порядок за _id
+            },
+            {
+                $project: {
+                    _id: 1,
+                    parentId: 1,
+                    name: `$name.${code}`,
+                    slug: `$slug.${code}`,
+                    icon: 1,
+                },
+            },
+        ]);
 
-        // Мапа для швидкого доступу
-        // const productCountMap = Object.fromEntries(productCounts.map(({ _id, productCount }) => [_id.toString(), productCount]));
-
-        // Повертаємо категорії з локалізованим ім’ям
-        const localizedCategories = categories.map((category) => ({
-            _id: category._id,
-            name: category.name?.[code] || '', // або резервна мова
-            slug: category.slug?.[code] || '',
-            icon: category.icon || '',
-            // productCount: productCountMap[category._id.toString()] || 0,
-        }));
-        // Повертаємо підкатегорії з локалізованим ім’ям
-        const localizedSubCategories = subCategories.map((sub) => ({
-            _id: sub._id,
-            parentId: sub.parentId,
-            name: sub.name?.[code] || '', // або резервна мова
-            slug: sub.slug?.[code] || '',
-            icon: sub.icon || '',
-            // productCount: productCountMap[category._id.toString()] || 0,
-        }));
-        // Повертаємо підпідкатегорії з локалізованим ім’ям
-        const localizedSubSubCategories = subSubCategories.map((subSub) => ({
-            _id: subSub._id,
-            parentId: subSub.parentId,
-            name: subSub.name?.[code] || '', // або резервна мова
-            slug: subSub.slug?.[code] || '',
-            icon: subSub.icon || '',
-            // productCount: productCountMap[category._id.toString()] || 0,
-        }));
+        // Отримуємо підпідкатегорії з трансформацією
+        const subSubCategories = await SubSubCategories.aggregate([
+            {
+                $match: { visible: { $ne: false } },
+            },
+            {
+                $sort: { _id: 1 }, // Зберігаємо порядок за _id
+            },
+            {
+                $project: {
+                    _id: 1,
+                    parentId: 1,
+                    name: `$name.${code}`,
+                    slug: `$slug.${code}`,
+                    icon: 1,
+                },
+            },
+        ]);
 
         res.json({
             success: true,
-            categories: localizedCategories,
-            sub_categories: localizedSubCategories,
-            sub_sub_categories: localizedSubSubCategories,
+            categories: categories,
+            sub_categories: subCategories,
+            sub_sub_categories: subSubCategories,
         });
     } catch (err) {
         console.error('Помилка:', err);
