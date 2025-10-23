@@ -246,6 +246,9 @@ export const getAllProducts = async (req, res) => {
             slug: 1,
             availability: 1,
             parameters: 1,
+            category: 1,
+            subCategory: 1,
+            subSubCategory: 1,
         })
             .skip(skip)
             .limit(pageSize)
@@ -299,6 +302,10 @@ export const getAllProducts = async (req, res) => {
                     }),
                 }));
 
+                const category = await Category.findById(product.category[0], { [`name.${langCode}`]: 1 });
+                const subCategory = await SubCategory.findById(product.category[1], { [`name.${langCode}`]: 1 });
+                const subSubCategory = await SubSubCategory.findById(product.category[2], { [`name.${langCode}`]: 1 });
+
                 return {
                     _id: product._id,
                     slug: product.slug?.[langCode] || product.slug?.[fallbackCode] || '',
@@ -315,6 +322,9 @@ export const getAllProducts = async (req, res) => {
                         color: product.availability?.color || '',
                     },
                     parameters: transformedParameters,
+                    category: category?.name?.[langCode] || category?.name?.[fallbackCode] || '',
+                    subCategory: subCategory?.name?.[langCode] || subCategory?.name?.[fallbackCode] || '',
+                    subSubCategory: subSubCategory?.name?.[langCode] || subSubCategory?.name?.[fallbackCode] || '',
                 };
             }),
         );

@@ -147,7 +147,7 @@ export const NewUserOrderMessage = async (order) => {
             user: auth.no_reply.user,
             pass: auth.no_reply.pass,
         },
-        tls: { servername: 'alistar.ltd' },
+        // tls: { servername: 'alistar.ltd' },
     });
 
     // Читаємо HTML шаблон
